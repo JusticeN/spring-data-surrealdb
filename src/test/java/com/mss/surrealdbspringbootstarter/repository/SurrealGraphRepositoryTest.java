@@ -75,6 +75,25 @@ class SurrealGraphRepositoryTest {
         }
 
         @Test
+        @DisplayName("resolves 'to' table from the provided target class")
+        void resolvesToTableFromTargetClass() {
+            Wrote expectedEdge = new Wrote();
+            when(surreal.relate(eq(Wrote.class), any(RecordId.class), eq("wrote"), any(RecordId.class)))
+                    .thenReturn(expectedEdge);
+
+            // Article domain class maps to "article" table
+            repo.relate(Wrote.class, "alice", Article.class, "surreal");
+
+            ArgumentCaptor<RecordId> toCaptor = ArgumentCaptor.forClass(RecordId.class);
+            verify(surreal).relate(
+                    eq(Wrote.class),
+                    any(RecordId.class),
+                    eq("wrote"),
+                    toCaptor.capture());
+            assertThat(toCaptor.getValue().getTable()).isEqualTo("article");
+        }
+
+        @Test
         @DisplayName("returns the edge instance produced by SurrealTemplate")
         void returnsEdgeFromTemplate() {
             Wrote expectedEdge = new Wrote();
@@ -174,6 +193,11 @@ class SurrealGraphRepositoryTest {
 
     @Table("person")
     static class Person {
+        @Id String id;
+    }
+
+    @Table("article")
+    static class Article {
         @Id String id;
     }
 

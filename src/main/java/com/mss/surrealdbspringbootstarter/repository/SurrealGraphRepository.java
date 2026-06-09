@@ -58,6 +58,26 @@ public interface SurrealGraphRepository<T, ID> extends SurrealRepository<T, ID> 
     <R extends Relation> R relate(Class<R> edgeType, ID fromId, String toTable, Object toId);
 
     /**
+     * Creates a bare graph edge (no metadata) from the record identified by
+     * {@code fromId} in this repository's table to the record identified by
+     * {@code toId} in the table mapped to {@code toTableAnnotatedClass}.
+     *
+     * <p>The edge-table name is resolved from the
+     * {@link com.mss.surrealdbspringbootstarter.mapping.Relate @Relate}
+     * annotation on {@code edgeType}. The target table name is resolved from
+     * the {@link com.mss.surrealdbspringbootstarter.mapping.Table @Table}
+     * annotation on {@code toTableAnnotatedClass}.
+     *
+     * @param edgeType              edge domain class (must extend {@link Relation})
+     * @param fromId                id of the source record (owned by this repository)
+     * @param toTableAnnotatedClass domain class of the target record
+     * @param toId                  id of the target record
+     * @param <R>                   edge type
+     * @return the created edge deserialised into {@code edgeType}
+     */
+    <R extends Relation> R relate(Class<R> edgeType, ID fromId, Class<?> toTableAnnotatedClass, Object toId);
+
+    /**
      * Creates a graph edge with attached metadata content from the record
      * identified by {@code fromId} to the record identified by {@code toId} in
      * {@code toTable}.

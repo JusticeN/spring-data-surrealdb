@@ -124,6 +124,13 @@ public class SimpleSurrealRepository<T, ID> implements SurrealGraphRepository<T,
     }
 
     @Override
+    public <R extends Relation> R relate(
+            Class<R> edgeType, ID fromId, Class<?> toTableAnnotatedClass, Object toId) {
+        String toTable = new SurrealEntityInformation<>(toTableAnnotatedClass).table();
+        return relate(edgeType, fromId, toTable, toId);
+    }
+
+    @Override
     public <R extends Relation, C> R relate(
             Class<R> edgeType, ID fromId, String toTable, Object toId, C content) {
         return template.relate(edgeType,
