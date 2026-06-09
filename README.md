@@ -11,7 +11,7 @@ Add the following dependency to your `pom.xml`:
 ```xml
 <dependency>
     <groupId>com.mss</groupId>
-    <artifactId>surrealdb-spring-boot-starter</artifactId>
+    <artifactId>spring-data-surrealdbr</artifactId>
     <version>1.0.0-SNAPSHOT</version> <!-- Replace with current version -->
 </dependency>
 ```
@@ -50,7 +50,7 @@ Annotate your main Spring Boot application class with `@EnableSurrealRepositorie
 ```java
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import com.mss.surrealdbspringbootstarter.repository.EnableSurrealRepositories;
+import repository.com.mss.springdata.surrealdb.EnableSurrealRepositories;
 
 @SpringBootApplication
 @EnableSurrealRepositories
@@ -66,7 +66,7 @@ public class DemoApplication {
 Use the `@Table` annotation to map your domain class to a SurrealDB table. Note that the primary key field can be mapped directly.
 
 ```java
-import com.mss.surrealdbspringbootstarter.mapping.Table;
+import mapping.com.mss.springdata.surrealdb.Table;
 import org.springframework.data.annotation.Id;
 
 @Table("person")
@@ -94,7 +94,7 @@ public class Person {
 Create an interface extending `SurrealRepository` to get standard CRUD operations right out of the box.
 
 ```java
-import com.mss.surrealdbspringbootstarter.repository.SurrealRepository;
+import repository.com.mss.springdata.surrealdb.SurrealRepository;
 
 public interface PersonRepository extends SurrealRepository<Person, String> {
 }
@@ -143,8 +143,8 @@ SurrealDB allows you to store direct pointers to other records using record link
 Use `@Link` to point to a single related entity.
 
 ```java
-import com.mss.surrealdbspringbootstarter.mapping.Link;
-import com.mss.surrealdbspringbootstarter.mapping.Table;
+import mapping.com.mss.springdata.surrealdb.Link;
+import mapping.com.mss.springdata.surrealdb.Table;
 import org.springframework.data.annotation.Id;
 
 @Table("person")
@@ -174,8 +174,8 @@ public class Company {
 Use `@LinkList` to manage a collection of record links.
 
 ```java
-import com.mss.surrealdbspringbootstarter.mapping.LinkList;
-import com.mss.surrealdbspringbootstarter.mapping.Table;
+import mapping.com.mss.springdata.surrealdb.LinkList;
+import mapping.com.mss.springdata.surrealdb.Table;
 import java.util.List;
 
 @Table("person")

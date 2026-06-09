@@ -6,7 +6,7 @@ plugins {
 
 group = 'com.mss'
 version = '0.0.1-SNAPSHOT'
-description = 'surrealdb-spring-boot-starter'
+description = 'spring-data-surrealdb'
 
 java {
     toolchain {
