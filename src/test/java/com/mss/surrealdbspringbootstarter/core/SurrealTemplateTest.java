@@ -1,9 +1,13 @@
 package com.mss.surrealdbspringbootstarter.core;
 
+import com.mss.surrealdbspringbootstarter.mapping.Relate;
 import com.mss.surrealdbspringbootstarter.mapping.Table;
 import com.surrealdb.RecordId;
+import com.surrealdb.Relation;
 import com.surrealdb.Surreal;
 import com.surrealdb.UpType;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.data.annotation.Id;
@@ -12,69 +16,137 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@DisplayName("SurrealTemplate")
 class SurrealTemplateTest {
 
     private final Surreal surreal = mock(Surreal.class);
     private final SurrealTemplate template = new SurrealTemplate(surreal);
 
-    @Test
-    void insertDelegatesToCreateWithResolvedTable() {
-        Person p = new Person();
-        p.name = "Ada";
-        when(surreal.create(eq(Person.class), eq("person"), any(Person.class)))
-                .thenReturn(List.of(p));
+    // -------------------------------------------------------------------------
+    // CRUD (pre-existing behaviour)
+    // -------------------------------------------------------------------------
 
-        Person saved = template.insert(p);
+    @Nested
+    @DisplayName("insert()")
+    class Insert {
 
-        assertThat(saved).isSameAs(p);
-        verify(surreal).create(eq(Person.class), eq("person"), any(Person.class));
+        @Test
+        @DisplayName("delegates to Surreal.query() when entity has String @Id")
+        void insertDelegatesToQueryForStringId() {
+            Person p = new Person();
+            p.name = "Ada";
+            com.surrealdb.Response mockResponse = mock(com.surrealdb.Response.class);
+            com.surrealdb.Value mockValue = mock(com.surrealdb.Value.class);
+            when(surreal.query(any(String.class), any(java.util.Map.class))).thenReturn(mockResponse);
+            when(mockResponse.take(0)).thenReturn(mockValue);
+            when(mockValue.get(Person.class)).thenReturn(p);
+
+            Person saved = template.insert(p);
+
+            assertThat(saved).isSameAs(p);
+            verify(surreal).query(contains("CREATE person CONTENT"), any(java.util.Map.class));
+        }
     }
 
-    @Test
-    void findByIdUsesRecordIdWithMappedTable() {
-        Person p = new Person();
-        when(surreal.select(eq(Person.class), any(RecordId.class))).thenReturn(Optional.of(p));
+    @Nested
+    @DisplayName("findById()")
+    class FindById {
 
-        Optional<Person> found = template.findById(Person.class, "ada");
+        @Test
+        @DisplayName("uses Surreal.query() when entity has String @Id")
+        void findByIdUsesQueryForStringId() {
+            Person p = new Person();
+            com.surrealdb.Response mockResponse = mock(com.surrealdb.Response.class);
+            com.surrealdb.Value mockValue = mock(com.surrealdb.Value.class);
+            when(surreal.query(any(String.class))).thenReturn(mockResponse);
+            when(mockResponse.take(0)).thenReturn(mockValue);
+            when(mockValue.isNone()).thenReturn(false);
+            when(mockValue.isNull()).thenReturn(false);
+            when(mockValue.get(Person.class)).thenReturn(p);
 
-        assertThat(found).containsSame(p);
-        ArgumentCaptor<RecordId> captor = ArgumentCaptor.forClass(RecordId.class);
-        verify(surreal).select(eq(Person.class), captor.capture());
-        assertThat(captor.getValue().getTable()).isEqualTo("person");
+            Optional<Person> found = template.findById(Person.class, "ada");
+
+            assertThat(found).containsSame(p);
+            verify(surreal).query(contains("SELECT *"));
+            verify(surreal).query(contains("<string>id AS id"));
+        }
     }
 
-    @Test
-    void deleteByIdDelegatesToSurrealDelete() {
-        template.deleteById(Person.class, "ada");
-        verify(surreal).delete(any(RecordId.class));
+    @Nested
+    @DisplayName("deleteById()")
+    class DeleteById {
+
+        @Test
+        @DisplayName("delegates to Surreal.delete() with a RecordId")
+        void deleteByIdDelegatesToSurrealDelete() {
+            template.deleteById(Person.class, "ada");
+            verify(surreal).delete(any(RecordId.class));
+        }
     }
 
-    @Test
-    void updateRequiresIdAndUsesContent() {
-        Person p = new Person();
-        p.id = "ada";
-        when(surreal.update(eq(Person.class), any(RecordId.class), eq(UpType.CONTENT), any()))
-                .thenReturn(p);
+    @Nested
+    @DisplayName("update()")
+    class Update {
 
-        Person updated = template.update(p);
-        assertThat(updated).isSameAs(p);
+        @Test
+        @DisplayName("uses Surreal.query() when entity has String @Id")
+        void updateUsesQueryForStringId() {
+            Person p = new Person();
+            p.id = "person:ada";
+            com.surrealdb.Response mockResponse = mock(com.surrealdb.Response.class);
+            com.surrealdb.Value mockValue = mock(com.surrealdb.Value.class);
+            when(surreal.query(any(String.class), any(java.util.Map.class))).thenReturn(mockResponse);
+            when(mockResponse.take(0)).thenReturn(mockValue);
+            when(mockValue.get(Person.class)).thenReturn(p);
+
+            Person updated = template.update(p);
+            assertThat(updated).isSameAs(p);
+            verify(surreal).query(contains("UPDATE person:ada CONTENT"), any(java.util.Map.class));
+            verify(surreal).query(contains("<string>id AS id"), any(java.util.Map.class));
+        }
+
+        @Test
+        @DisplayName("throws IllegalArgumentException when the @Id field is null")
+        void updateThrowsWhenIdIsNull() {
+            Person p = new Person(); // id is null
+            assertThatThrownBy(() -> template.update(p))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("without an @Id value");
+        }
     }
 
-    @Test
-    void deleteAllDelegatesToTableLevelDelete() {
-        template.deleteAll(Person.class);
-        verify(surreal).delete(eq("person"));
+    @Nested
+    @DisplayName("deleteAll()")
+    class DeleteAll {
+
+        @Test
+        @DisplayName("delegates to table-level Surreal.delete(String)")
+        void deleteAllDelegatesToTableLevelDelete() {
+            template.deleteAll(Person.class);
+            verify(surreal).delete(eq("person"));
+        }
     }
+
+    // =========================================================================
+    // Test fixtures
+    // =========================================================================
 
     @Table("person")
     static class Person {
         @Id String id;
         String name;
+    }
+
+    @Relate("wrote")
+    static class Wrote extends Relation {
+        String since;
     }
 }

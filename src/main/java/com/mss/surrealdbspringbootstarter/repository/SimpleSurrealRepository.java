@@ -2,19 +2,20 @@ package com.mss.surrealdbspringbootstarter.repository;
 
 import com.mss.surrealdbspringbootstarter.core.SurrealTemplate;
 import com.mss.surrealdbspringbootstarter.mapping.SurrealEntityInformation;
+import com.surrealdb.Relation;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Default, generic {@link SurrealRepository} implementation that delegates
- * all CRUD operations to a {@link SurrealTemplate}.
+ * Default, generic {@link SurrealGraphRepository} implementation that delegates
+ * all CRUD and graph operations to a {@link SurrealTemplate}.
  *
  * <p>One instance is created per repository interface by the
  * {@code SurrealRepositoryFactoryBean}.
  */
-public class SimpleSurrealRepository<T, ID> implements SurrealRepository<T, ID> {
+public class SimpleSurrealRepository<T, ID> implements SurrealGraphRepository<T, ID> {
 
     private final SurrealTemplate template;
     private final Class<T> domainType;
@@ -25,6 +26,10 @@ public class SimpleSurrealRepository<T, ID> implements SurrealRepository<T, ID> 
         this.domainType = domainType;
         this.entityInformation = new SurrealEntityInformation<>(domainType);
     }
+
+    // -------------------------------------------------------------------------
+    // CrudRepository
+    // -------------------------------------------------------------------------
 
     @Override
     @SuppressWarnings("unchecked")
@@ -104,5 +109,26 @@ public class SimpleSurrealRepository<T, ID> implements SurrealRepository<T, ID> 
     @Override
     public void deleteAll() {
         template.deleteAll(domainType);
+    }
+
+    // -------------------------------------------------------------------------
+    // SurrealGraphRepository — graph edges
+    // -------------------------------------------------------------------------
+
+    @Override
+    public <R extends Relation> R relate(
+            Class<R> edgeType, ID fromId, String toTable, Object toId) {
+        return template.relate(edgeType,
+                fromId, entityInformation.table(),
+                toId,   toTable);
+    }
+
+    @Override
+    public <R extends Relation, C> R relate(
+            Class<R> edgeType, ID fromId, String toTable, Object toId, C content) {
+        return template.relate(edgeType,
+                fromId, entityInformation.table(),
+                toId,   toTable,
+                content);
     }
 }
