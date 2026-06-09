@@ -18,7 +18,7 @@ import org.springframework.data.repository.NoRepositoryBean;
  * {@code toTable} + {@code toId} pair identifies the target record in any
  * table (which may be a different entity type).
  *
- * <h3>Usage</h3>
+ * <h2>Usage</h2>
  * <pre>
  * {@literal @}Relate("wrote")
  * public class Wrote extends Relation {

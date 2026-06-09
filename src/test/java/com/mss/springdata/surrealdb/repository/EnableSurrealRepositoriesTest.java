@@ -26,7 +26,7 @@ class EnableSurrealRepositoriesTest {
     }
 
     @Configuration
-    @EnableSurrealRepositories(basePackages = "com.mss.surrealdbspringbootstarter.repository")
+    @EnableSurrealRepositories(basePackages = "com.mss.springdata.surrealdb.repository")
     static class Config {
 
         @Bean

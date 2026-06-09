@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  * owning record stores only the target's {@code RecordId}; no separate edge
  * table is created.
  *
- * <h3>Field type choices</h3>
+ * <h2>Field type choices</h2>
  * <ul>
  *   <li>{@code RecordId fieldName} — the field stores the raw id.  The linked
  *       record is <em>not</em> hydrated automatically even when
@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
  *       declared type with only its {@code @Id} field populated.</li>
  * </ul>
  *
- * <h3>Auto-FETCH</h3>
+ * <h2>Auto-FETCH</h2>
  * <p>When {@link #fetch()} is {@code true} the field name is included in an
  * automatically generated {@code FETCH} clause by
  * {@link SurrealTemplate#findById} and
@@ -36,7 +36,7 @@ import java.lang.annotation.Target;
  * ensure the string record-id is returned as a JSON object, allowing
  * deserialisation into the declared type.
  *
- * <h3>Usage</h3>
+ * <h2>Usage</h2>
  * <pre>
  * {@literal @}Table("person")
  * public class Person {

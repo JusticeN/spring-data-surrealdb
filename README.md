@@ -11,7 +11,7 @@ Add the following dependency to your `pom.xml`:
 ```xml
 <dependency>
     <groupId>com.mss</groupId>
-    <artifactId>spring-data-surrealdbr</artifactId>
+    <artifactId>spring-data-surrealdb</artifactId>
     <version>1.0.0-SNAPSHOT</version> <!-- Replace with current version -->
 </dependency>
 ```
@@ -22,7 +22,7 @@ Add the dependency to your `build.gradle`:
 
 ```gradle
 dependencies {
-    implementation 'com.mss:surrealdb-spring-boot-starter:1.0.0-SNAPSHOT' // Replace with current version
+    implementation 'com.mss:spring-data-surrealdb:1.0.0-SNAPSHOT' // Replace with current version
 }
 ```
 
