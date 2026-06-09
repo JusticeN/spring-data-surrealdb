@@ -102,10 +102,10 @@ public class SurrealTemplate {
             surql.append(", <string>id AS id");
         }
         for (String field : lazyLinks) {
-            surql.append(", { id: ").append(field).append(" } AS ").append(field);
+            surql.append(", IF ").append(field).append(" != NONE THEN { id: <string>").append(field).append(".id } ELSE NONE END AS ").append(field);
         }
         for (String field : lazyLinkLists) {
-            surql.append(", (SELECT id FROM $parent.").append(field).append(") AS ").append(field);
+            surql.append(", (SELECT <string>id AS id FROM $parent.").append(field).append(") AS ").append(field);
         }
         surql.append(" FROM ").append(recordId(info.table(), id).toString());
 
@@ -164,10 +164,10 @@ public class SurrealTemplate {
             surql.append(", <string>id AS id");
         }
         for (String field : lazyLinks) {
-            surql.append(", { id: ").append(field).append(" } AS ").append(field);
+            surql.append(", IF ").append(field).append(" != NONE THEN { id: <string>").append(field).append(".id } ELSE NONE END AS ").append(field);
         }
         for (String field : lazyLinkLists) {
-            surql.append(", (SELECT id FROM $parent.").append(field).append(") AS ").append(field);
+            surql.append(", (SELECT <string>id AS id FROM $parent.").append(field).append(") AS ").append(field);
         }
         surql.append(" FROM ").append(info.table());
 
