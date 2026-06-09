@@ -1,8 +1,10 @@
 package com.mss.surrealdbspringbootstarter;
 
+import com.mss.surrealdbspringbootstarter.core.SurrealTemplate;
 import com.surrealdb.Surreal;
 import com.surrealdb.signin.RootCredential;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -20,12 +22,12 @@ import org.springframework.util.StringUtils;
  */
 @AutoConfiguration
 @ConditionalOnClass(Surreal.class)
-@ConditionalOnProperty(prefix = "surrealdb", name = "url")
 @EnableConfigurationProperties(SurrealDbProperties.class)
 public class SurrealDbAutoConfiguration {
 
     @Bean(destroyMethod = "close")
     @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "surrealdb", name = "url")
     public Surreal surreal(SurrealDbProperties properties) {
         Surreal surreal = new Surreal();
         surreal.connect(properties.getUrl());
@@ -44,5 +46,16 @@ public class SurrealDbAutoConfiguration {
         }
 
         return surreal;
+    }
+
+    /**
+     * Spring Data–style template wrapper. Registered whenever a {@link Surreal}
+     * bean is available (auto-configured or user-supplied).
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnBean(Surreal.class)
+    public SurrealTemplate surrealTemplate(Surreal surreal) {
+        return new SurrealTemplate(surreal);
     }
 }

@@ -1,5 +1,6 @@
 package com.mss.surrealdbspringbootstarter;
 
+import com.mss.surrealdbspringbootstarter.core.SurrealTemplate;
 import com.surrealdb.Surreal;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -17,7 +18,20 @@ class SurrealDbAutoConfigurationTest {
 
     @Test
     void autoConfigurationIsDisabledWithoutUrl() {
-        contextRunner.run(context -> assertThat(context).doesNotHaveBean(Surreal.class));
+        contextRunner.run(context -> {
+            assertThat(context).doesNotHaveBean(Surreal.class);
+            assertThat(context).doesNotHaveBean(SurrealTemplate.class);
+        });
+    }
+
+    @Test
+    void surrealTemplateIsRegisteredWhenSurrealBeanIsPresent() {
+        contextRunner
+                .withUserConfiguration(StubSurrealConfig.class)
+                .run(context -> {
+                    assertThat(context).hasSingleBean(Surreal.class);
+                    assertThat(context).hasSingleBean(SurrealTemplate.class);
+                });
     }
 
     @Test
